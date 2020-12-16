@@ -14,10 +14,10 @@ fi
 echo "*** Starting EZ Travel Install ***"
 
 if [ -z $UNIX_USER_HOME_PATH ]; then
-  UNIX_USER_HOME_PATH=/home/dtu_training
+  UNIX_USER_HOME_PATH=/home/dtu_training/perform-2021-hotday-dev/cloud-migration/ez
+  UNIX_USER=dtu_training
 fi
 LOGFILE='/tmp/installEZtravel.log' 
-mkdir -p $UNIX_USER_HOME_PATH
 
 echo "*** Create EZ Travel Install Logfile: $LOGFILE ***"
 printf "\n\n***** Init Installation ***\n" >> $LOGFILE 2>&1 
@@ -80,11 +80,11 @@ printf "\n\n***** Download, install and configure EasyTravel ***\n" >> $LOGFILE 
  java -jar dynatrace-easytravel-linux-x86_64.jar -y ;\
  chmod 755 -R easytravel-2.0.0-x64 ; }  >> $LOGFILE 2>&1  
 
-echo "*** Adjust permissions for workshop user ***"
-printf "\n\n***** Adjust permissions for workshop user ***\n" >> $LOGFILE 2>&1 
-usermod -a -G docker workshop >> $LOGFILE 2>&1
-usermod -a -G sudo workshop >> $LOGFILE 2>&1
-chown workshop:workshop -R easytravel-2.0.0-x64 >> $LOGFILE 2>&1 
+echo "*** Adjust permissions for $UNIX_USER user ***"
+printf "\n\n***** Adjust permissions for $UNIX_USER user ***\n" >> $LOGFILE 2>&1 
+usermod -a -G docker $UNIX_USER >> $LOGFILE 2>&1
+usermod -a -G sudo $UNIX_USER >> $LOGFILE 2>&1
+chown $UNIX_USER:$UNIX_USER -R easytravel-2.0.0-x64 >> $LOGFILE 2>&1 
 
 echo "*** Configuring EasyTravel Settings ***"
 sed -i 's/apmServerDefault=Classic/apmServerDefault=APM/g' $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/resources/easyTravelConfig.properties
@@ -119,4 +119,4 @@ sed -i "s/JAVA_BIN=..\\/jre\\/bin\\/java/JAVA_BIN=\\/usr\\/bin\\/java/g" $UNIX_U
 echo "*** EZ Travel Install Done."
 echo "View log with: tail -f $LOGFILE"
 
-sudo $UNIX_USER_HOME_PATH/modernize-workshop-setup/startEZtravel.sh
+sudo $UNIX_USER_HOME_PATH/startEZtravel.sh

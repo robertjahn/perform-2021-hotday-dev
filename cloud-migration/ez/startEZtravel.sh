@@ -3,11 +3,12 @@
 LOGFILE='/tmp/EZtravel.log'
 START_TIME="$(date)"
 if [ -z $UNIX_USER_HOME_PATH ]; then
-  UNIX_USER_HOME_PATH=/home/dtu_training
+  UNIX_USER_HOME_PATH=/home/dtu_training/perform-2021-hotday-dev/cloud-migration/ez
+  UNIX_USER=dtu_training
 fi
 
 echo "*** Calling Stop EasyTravel ***"
-sudo $UNIX_USER_HOME_PATH/modernize-workshop-setup/stopEZtravel.sh
+sudo $UNIX_USER_HOME_PATH/stopEZtravel.sh
 
 printf "\n\n***** Init Log ***\n" > $LOGFILE 2>&1
 { date ; apt update 2>/dev/null; whoami ; } >> $LOGFILE ; sudo chmod 777 $LOGFILE
@@ -26,11 +27,11 @@ echo "*** Start eztravel ***"
 # if not workshop user, then run as workshop user
 # if always use workshop, then get prompted for password
 # easyTravel require that is to not run a root user
-if [ `whoami` == "workshop" ]; then
+if [ `whoami` == "$UNIX_USER" ]; then
     $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/weblauncher/weblauncher.sh > /tmp/weblauncher.log 2>&1 &
 else
-    echo "*** Starting EasyTravel as workshop user ***"  >> $LOGFILE 2>&1
-    su -c "sh $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/weblauncher/weblauncher.sh > /tmp/weblauncher.log 2>&1 &" workshop
+    echo "Abort: user is not $UNIX_USER" >> $LOGFILE  2>&1
+    exit 1
 fi
 { [[ -f /tmp/weblauncher.log ]] && echo "*** EasyTravel launched ***" || echo "*** Problem launching EasyTravel ***" ; } >> $LOGFILE 2>&1
 
@@ -47,4 +48,4 @@ echo ""
 echo "View weblauncher log again with: tail -f /tmp/weblauncher.log"
 echo ""
 
-sudo $UNIX_USER_HOME_PATH/modernize-workshop-setup/showEZtravel.sh
+sudo $UNIX_USER_HOME_PATH/showEZtravel.sh
