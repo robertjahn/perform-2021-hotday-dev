@@ -46,13 +46,11 @@ else
     echolog "Starting EasyTravel as changed user $UNIX_USER"
     su -c "sh $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/weblauncher/weblauncher.sh > /tmp/weblauncher.log 2>&1 &" $UNIX_USER
 fi
-# allow log to start, then check to see if started ok
-sleep 10
-{ [[ -f /tmp/weblauncher.log ]] && echolog "EasyTravel launched" || echolog "Problem launching EasyTravel no weblauncher.log" ; }
 
+# allow log to start, then check to see if started ok
 while IFS= read -r LOGLINE || [[ -n "$LOGLINE" ]]; do
     printf '%s\n' "$LOGLINE"
-    [[ "${LOGLINE}" == *"easyTravel procedures started successfully"* ]] && echo "easyTravel READY" && break
+    [[ "${LOGLINE}" == *"easyTravel procedures started successfully"* ]] && echo "easyTravel READY" && break || echolog "Problem launching EasyTravel"
 done < <(timeout 100 tail -f /tmp/weblauncher.log)
 
 END_TIME="$(date)"
