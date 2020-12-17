@@ -19,7 +19,10 @@ echolog()
     echo "$@" >> $LOGFILE
 )
 
-echolog "Starting EZ Travel Install @ $START_TIME"
+echolog "************************************************************************"
+echolog "Starting EZ Travel Install Script @ $START_TIME"
+echolog "************************************************************************"
+
 # this is a way to support overrides
 if [ -z $UNIX_USER_HOME_PATH ]; then
   UNIX_USER_HOME_PATH=/home/dtu_training/perform-2021-hotday-dev/cloud-migration/ez
@@ -28,10 +31,10 @@ if [ -z $UNIX_USER ]; then
   UNIX_USER=dtu_training
 fi
 
-echolog "Init Installation"
+echolog "Init Installation Log"
 { date ; apt update; whoami ; } >> $LOGFILE ; chmod 777 $LOGFILE
 
-echolog "*** Add .bash_aliases file ***"
+echolog "Add .bash_aliases file"
 echo "
 # Alias for ease of use of the CLI
 alias hg='history | grep' 
@@ -115,8 +118,10 @@ echolog "Fix finding the Java package path"
 sed -i "s/JAVA_BIN=..\\/jre\\/bin\\/java/JAVA_BIN=\\/usr\\/bin\\/java/g" $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/weblauncher/weblauncher.sh
 
 END_TIME="$(date)"
-echolog "*** EZ Travel Install Done *** "
+echolog "************************************************************************"
+echolog "EZ Travel Install Script Done"
 echolog "START_TIME: $START_TIME     END_TIME: $END_TIME "
+echolog "************************************************************************"
 
 echo ""
 echo "View log with: tail -f $LOGFILE"
