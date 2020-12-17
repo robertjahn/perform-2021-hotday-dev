@@ -11,39 +11,42 @@ if ! [ $(id -u) = 0 ]; then
    exit 1
 fi
 
-echo "*** Starting EZ Travel Install ***"
+START_TIME="$(date)"
+LOGFILE='/tmp/installEZtravel.log' 
+echolog()
+(
+    echo "$@"
+    echo "$@" >> $log_file_name
+)
 
+echolog "Starting EZ Travel Install @ $START_TIME"
+# this is a way to support overrides
 if [ -z $UNIX_USER_HOME_PATH ]; then
   UNIX_USER_HOME_PATH=/home/dtu_training/perform-2021-hotday-dev/cloud-migration/ez
+fi
+if [ -z $UNIX_USER ]; then
   UNIX_USER=dtu_training
 fi
-LOGFILE='/tmp/installEZtravel.log' 
 
-echo "*** Create EZ Travel Install Logfile: $LOGFILE ***"
-printf "\n\n***** Init Installation ***\n" >> $LOGFILE 2>&1 
+echolog "Init Installation"
 { date ; apt update; whoami ; } >> $LOGFILE ; chmod 777 $LOGFILE
 
-echo "*** Add ProTip alias ***"
-printf "\n\n***** ProTip Alias***\n" >> $LOGFILE 2>&1 
+echolog "*** Add .bash_aliases file ***"
 echo "
 # Alias for ease of use of the CLI
 alias hg='history | grep' 
 alias h='history' 
+alias k='kubectl'
 alias vaml='vi -c \"set syntax:yaml\" -' 
 alias vson='vi -c \"set syntax:json\" -' 
-alias pg='ps -aux | grep' " > /root/.bash_aliases
+alias pg='ps -aux | grep' " > /home/$UNIX_USER/.bash_aliases
 
-echo "*** Copy Aliases ***"
-cp /root/.bash_aliases $UNIX_USER_HOME_PATH/.bash_aliases
+echolog "Install Chromium on the system"
+apt install chromium-browser -y >> $LOGFILE 2>&1
 
-echo "*** Installation of Chromium on the system ***"
-printf "\n\n***** Installation of Chromium on the system ***\n" >> $LOGFILE 2>&1 
-apt install chromium-browser -y >>  $LOGFILE 2>&1
-
-echo "*** Add NGINX ReverseProxy for AngularShop ***"
+echolog "Add Docker NGINX ReverseProxy files"
 # mapping 9080 to 80 avoid problems on student browsers that 
 # can hit non-standard ports
-printf "\n\n***** Configuring reverse proxy***\n" >> $LOGFILE 2>&1 
 export PUBLIC_IP=`hostname -i | awk '{ print $1'}`
 mkdir -p $UNIX_USER_HOME_PATH/nginx/classic
 mkdir -p $UNIX_USER_HOME_PATH/nginx/angular
@@ -69,24 +72,21 @@ server {
     }
 }" > $UNIX_USER_HOME_PATH/nginx/angular/angular.conf
 
-echo "*** Install default-jre ***"
-printf "\n\n***** JavaRuntime  install ***\n" >> $LOGFILE 2>&1 
+echolog "Install default-jre"
 apt install -y openjdk-8-jre-headless >> $LOGFILE 2>&1
 
-echo "*** Download EasyTravel ***"
-printf "\n\n***** Download, install and configure EasyTravel ***\n" >> $LOGFILE 2>&1 
+echolog "Download, install and configure EasyTravel"
 { cd $UNIX_USER_HOME_PATH ;\
  wget -nv -O dynatrace-easytravel-linux-x86_64.jar http://dexya6d9gs5s.cloudfront.net/latest/dynatrace-easytravel-linux-x86_64.jar ;\
  java -jar dynatrace-easytravel-linux-x86_64.jar -y ;\
  chmod 755 -R easytravel-2.0.0-x64 ; }  >> $LOGFILE 2>&1  
 
-echo "*** Adjust permissions for $UNIX_USER user ***"
-printf "\n\n***** Adjust permissions for $UNIX_USER user ***\n" >> $LOGFILE 2>&1 
+echolog "Adjust permissions for $UNIX_USER user"
 usermod -a -G docker $UNIX_USER >> $LOGFILE 2>&1
 usermod -a -G sudo $UNIX_USER >> $LOGFILE 2>&1
 chown $UNIX_USER:$UNIX_USER -R easytravel-2.0.0-x64 >> $LOGFILE 2>&1 
 
-echo "*** Configuring EasyTravel Settings ***"
+echolog "Configuring EasyTravel Settings"
 sed -i 's/apmServerDefault=Classic/apmServerDefault=APM/g' $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/resources/easyTravelConfig.properties
 sed -i 's/config.frontendJavaopts=-Xmx160m/config.frontendJavaopts=-Xmx320m/g' $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/resources/easyTravelConfig.properties
 sed -i 's/config.backendJavaopts=-Xmx64m/config.backendJavaopts=-Xmx320m/g' $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/resources/easyTravelConfig.properties
@@ -111,12 +111,15 @@ sed -i 's/config.reUseChromeDriverFrequency=4/config.reUseChromeDriverFrequency=
 MY_PUBLIC_IP=$(curl -s  http://checkip.amazonaws.com) && echo "MY PUBLIC IP = $MY_PUBLIC_IP"
 sudo sed -i 's/config.thirdpartyUrl=http:\/\/${config.thirdpartyHost}:${config.thirdpartyPort}\//config.thirdpartyUrl=http:\/\/'"$MY_PUBLIC_IP"':${config.thirdpartyPort}\//g' $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/resources/easyTravelConfig.properties
 
-echo "*** Fix finding the Java package path ***"
+echolog "Fix finding the Java package path"
 sed -i "s/JAVA_BIN=..\\/jre\\/bin\\/java/JAVA_BIN=\\/usr\\/bin\\/java/g" $UNIX_USER_HOME_PATH/easytravel-2.0.0-x64/weblauncher/weblauncher.sh
 
-{ date ; echo "installation done" ;} >> $LOGFILE 2>&1
+END_TIME="$(date)"
+echolog "*** EZ Travel Install Done *** "
+echolog "START_TIME: $START_TIME     END_TIME: $END_TIME "
 
-echo "*** EZ Travel Install Done."
+echo ""
 echo "View log with: tail -f $LOGFILE"
-
+echo ""
+echo "calling startEZtravel"
 sudo $UNIX_USER_HOME_PATH/startEZtravel.sh
