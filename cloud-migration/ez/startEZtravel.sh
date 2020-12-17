@@ -13,7 +13,7 @@ LOGFILE='/tmp/EZtravel.log'
 echolog()
 (
     echo "$@"
-    echo "$@" >> $log_file_name
+    echo "$@" >> $LOGFILE
 )
 
 echolog "Init Log @ $START_TIME"

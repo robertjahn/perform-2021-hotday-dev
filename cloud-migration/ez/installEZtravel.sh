@@ -16,7 +16,7 @@ LOGFILE='/tmp/installEZtravel.log'
 echolog()
 (
     echo "$@"
-    echo "$@" >> $log_file_name
+    echo "$@" >> $LOGFILE
 )
 
 echolog "Starting EZ Travel Install @ $START_TIME"
