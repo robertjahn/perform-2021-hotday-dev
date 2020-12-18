@@ -123,7 +123,6 @@ spec:
     nodePort: 30687
   selector:
     app: easytravel-backend
-  type: LoadBalancer
 status:
   loadBalancer: {}
 ---
