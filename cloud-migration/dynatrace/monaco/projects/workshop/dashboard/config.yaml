@@ -1,0 +1,6 @@
+config:
+  - dashboard-workshop: "dashboard-workshop.json"
+
+dashboard-workshop:
+  - name: "modernize-workshop"
+  - owner: "rob.jahn@dynatrace.com"
