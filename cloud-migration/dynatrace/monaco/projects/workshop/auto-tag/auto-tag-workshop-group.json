@@ -17,7 +17,7 @@
           "comparisonInfo": {
             "type": "STRING",
             "operator": "ENDS_WITH",
-            "value": "workshop-ez-monolith",
+            "value": "{{ .name }}",
             "negate": false,
             "caseSensitive": true
           }
